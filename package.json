@@ -1,0 +1,14 @@
+{
+  "name": "data-chunk",
+  "version": "0.0.1",
+  "description": "data chunked",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "vk",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^1.2.1"
+  }
+}
