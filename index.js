@@ -84,6 +84,7 @@ for(var key in async){
 data_chunk.response = function(v){
 	if(v){
 		data_chunk.__curres_ = opt.call(v)==='[object Object]'? v : null;
+		data_chunk.__index_ = 0;
 	} else {
 		return data_chunk.__curres_;
 	}
@@ -107,7 +108,6 @@ data_chunk.writeData = function(res, data){
 		'}',
 	'</script>'].join(''));
 };
-data_chunk.__index_ = 0;
 
 //console.log(data_chunk);
 
