@@ -57,7 +57,7 @@ for(var key in async){
 			return function(){
 				var argus = aps.call(arguments),
 					callback = argus[argus.length-1],
-					tasks = argus[0], o;
+					tasks = argus[0], o, func;
 				//console.log(k, argus);
 				if(Array.isArray(tasks)){
 					o = [];
@@ -71,11 +71,15 @@ for(var key in async){
 					}
 				}
 				argus[0] = o;
-				argus[argus.length-1] = function(){
-					var res = data_chunk.response(), params = aps.call(arguments);
-					res && res.end();
+
+				callback = opt.call(callback)==='[object Function]'? callback : null;
+				func = function(err, results){
+					var res = data_chunk.response(),
+						params = aps.call(arguments);
+					res && res.end(); //console.log(results);
 					callback && callback.apply(data_chunk, params);
 				};
+				callback? argus[argus.length-1]=func : argus.push(func);
 				exec.apply(data_chunk, argus);
 			};
 		}(fn, key));
@@ -91,13 +95,13 @@ data_chunk.response = function(v){
 };
 data_chunk.writeData = function(res, data){
 	data = JSON.stringify(data);
-	res.write(['<script>',
+	res.write(['\n<script>',
 		'var root = window;',
 		'if(root.ICAT && ICAT.dataChunk){',
 			'ICAT.dataChunk(', data, ')',
 		'}else{',
 			'root.PAGEDATA = root.PAGEDATA || {};',
-			';(function(data, dcname, node){',
+			'(function(data, dcname, node){',
 				'data = data || {};',
 				'dcname = data.dcname;',
 				'if(dcname){',
