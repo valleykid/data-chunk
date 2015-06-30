@@ -76,8 +76,12 @@ for(var key in async){
 				func = function(err, results){
 					var res = data_chunk.response(),
 						params = aps.call(arguments);
-					res && res.end(); //console.log(results);
 					callback && callback.apply(data_chunk, params);
+					if(res){
+						var temp = data_chunk.__footTemp_;
+						if(temp) data_chunk.fragRender(temp);
+						res.end(); //console.log(results);
+					}
 				};
 				callback? argus[argus.length-1]=func : argus.push(func);
 				exec.apply(data_chunk, argus);
@@ -85,10 +89,11 @@ for(var key in async){
 		}(fn, key));
 	}
 }
-data_chunk.response = function(v){
+data_chunk.response = function(v, footTemp){
 	if(v){
 		data_chunk.__curres_ = opt.call(v)==='[object Object]'? v : null;
 		data_chunk.__index_ = 0;
+		data_chunk.__footTemp_ = footTemp;
 	} else {
 		return data_chunk.__curres_;
 	}
@@ -112,6 +117,36 @@ data_chunk.writeData = function(res, data){
 		'}',
 	'</script>'].join(''));
 };
+
+data_chunk.fragRender = function(name, data, res){
+	res = res || this.response();
+	if(!res) return;
+
+	var app = res.req.app, engines = app.engines, fn, file,
+		ekey = app.get('view engine'),
+		path = app.get('views');
+	data = extend({}, res.locals, data);
+	ekey = ekey.charAt(0)==='.'? ekey : '.'+ekey;
+	fn = engines[ekey];
+	file = path + '/' + (~name.indexOf(ekey)? name : name+ekey);
+	if(fn){
+		fn(file, data, function(err, ret){
+			res.write(ret);
+		});
+	}
+};
+
+function extend(obj){
+	if (opt.call(obj)!=='[object Object]') return obj;
+	var source, prop;
+	for(var i=1, length=arguments.length; i<length; i++){
+		source = arguments[i];
+		for(prop in source){
+			obj[prop] = source[prop];
+		}
+	}
+	return obj;
+}
 
 //console.log(data_chunk);
 
