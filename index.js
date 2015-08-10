@@ -124,13 +124,14 @@ data_chunk.fragRender = function(name, data, res){
 
 	var app = res.req.app, engines = app.engines, fn, file,
 		ekey = app.get('view engine'),
+		key = app.get('__dataKey_'),
 		path = app.get('views');
-	data = extend({}, res.locals, data);
+	extend(key? res.locals[key] : res.locals, data);
 	ekey = ekey.charAt(0)==='.'? ekey : '.'+ekey;
 	fn = engines[ekey];
 	file = path + '/' + (~name.indexOf(ekey)? name : name+ekey);
 	if(fn){
-		fn(file, data, function(err, ret){
+		fn(file, res.locals, function(err, ret){
 			res.write(ret);
 		});
 	}
